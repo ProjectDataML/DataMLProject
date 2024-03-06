@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommendation AirBnB</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/base.css'%}" rel="stylesheet" />
+</head>
+<body>
+
+<nav class="navbar">
+    <span class="navbar-brand mb-0 h1">Recommendation AirBnB</span>
+</nav>
+
+<div class="d-flex align-items-stretch">
+    <div class="sidebar">
+        <nav class="nav flex-column">
+            <a class="nav-link" href="#">Statistiques</a>
+            <a class="nav-link active" href="#">ML</a>
+        </nav>
+    </div>
+    <div class="content">
+        <!-- Notre contenu -->
+
+        <!-- Pied de page (footer) à l'intérieur de la zone de contenu -->
+        <footer class="footer-content">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>À propos de nous</h5>
+                    <p>Cette application a été créée pour le projet système d'information et donnée par Aurelien, Elodie, Tarek et Krishnarash. L'application a pour objectif de recommander les airbnb les plus sur en fonction de vos informations.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Liens Utiles</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Github</a></li>
+                        <li><a href="#">Premiere v0.1 (Stats)</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 copycenter">
+                    © Recommendation AirBnB 2024
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
+

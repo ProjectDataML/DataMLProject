@@ -5,4 +5,9 @@ from django.core.serializers import serialize
 def index(request):
     listings = Calendar.objects.all()
     data = serialize('json', listings, fields=('date', 'price'))
-    return render(request, 'stats.html', {'data': data})
+    return render(request, 'base.html', {'data': data})
+
+# def index(request):
+#     listings = Calendar.objects.all()
+#     data = serialize('json', listings, fields=('date', 'price'))
+#     return render(request, 'base.html', {'data': data})
