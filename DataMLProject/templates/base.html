@@ -18,12 +18,14 @@
 <div class="d-flex align-items-stretch">
     <div class="sidebar">
         <nav class="nav flex-column">
-            <a class="nav-link" href="#">Statistiques</a>
-            <a class="nav-link active" href="#">ML</a>
+            <a class="nav-link" href="{% url 'stats' %}">Statistiques</a>
+            <a class="nav-link active" href="{% url 'ml' %}">ML</a>
         </nav>
     </div>
     <div class="content">
-        <!-- Notre contenu -->
+        <main role="main" class="m-3">
+            {% block content %} {% endblock %}
+        </main>
 
         <!-- Pied de page (footer) à l'intérieur de la zone de contenu -->
         <footer class="footer-content">
@@ -35,8 +37,8 @@
                 <div class="col-md-4">
                     <h5>Liens Utiles</h5>
                     <ul class="list-unstyled">
-                        <li><a href="#">Github</a></li>
-                        <li><a href="#">Premiere v0.1 (Stats)</a></li>
+                        <li><a href="https://github.com/ProjectDataML/DataMLProject">Github</a></li>
+                        <li><a href="#">Drive v0.1 (Stats)</a></li>
                     </ul>
                 </div>
             </div>

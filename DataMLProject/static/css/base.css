@@ -4,10 +4,13 @@ body {
 }
 
 .sidebar {
+    position: sticky;
+    top: 0; /* Adjust this value as needed */
     height: 100vh;
-    background-color: #f8f9fa;
     padding: 10px 15px;
+    background-color: #f8f9fa;
 }
+
 
 .nav-item {
     padding: 5px 0;
@@ -56,8 +59,4 @@ body {
 
 .footer-content a:hover {
     color: #FF5A5F;
-}
-
-.copycenter{
-    padding-left: 130px;
 }
