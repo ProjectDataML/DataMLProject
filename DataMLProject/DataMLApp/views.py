@@ -6,9 +6,7 @@ def index(request):
     return render(request, 'base.html' )
 
 def stats(request):
-    listings = Calendar.objects.all()
-    data = serialize('json', listings, fields=('date', 'price'))
-    return render(request, 'stats.html', {'data': data})
+    return render(request, 'stats.html', {"streamlit_url": "http://localhost:8501"})
 
 def ml(request):
     return render(request, 'ml.html' )
