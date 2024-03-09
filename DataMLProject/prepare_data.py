@@ -3,7 +3,6 @@ import os
 from sqlalchemy import create_engine
 
 def clean_data(df):
-    # Handling missing values
     # Drop columns with more than 50% missing values
     threshold = len(df) * 0.5
     df = df.dropna(thresh=threshold, axis=1)
@@ -14,8 +13,7 @@ def clean_data(df):
     # Removing duplicates
     df = df.drop_duplicates()
 
-    # Correcting data types
-    # Convert necessary columns to appropriate data types
+    # Convert 'host_since' to datetime
     df['host_since'] = pd.to_datetime(df['host_since'], errors='coerce')
 
     # Cleaning the 'price' column
@@ -25,25 +23,35 @@ def clean_data(df):
     # Remove rows with non-numeric prices
     df = df.dropna(subset=['price'])
 
-    # Split de la colonne 'neighbourhood' en trois nouvelles colonnes
+    # Split 'neighbourhood' into three new columns
     location_split = df['neighbourhood'].str.split(', ', expand=True)
     df['city'] = location_split[0]
     df['department'] = location_split[1]
     df['country'] = location_split[2]
 
-    # Suppression de la colonne 'neighbourhood' originale
+    # Remove original 'neighbourhood' column
     df = df.drop('neighbourhood', axis=1)
 
-    # Suppression de la colonne 'amenities' originale
+    # Remove original 'amenities' column
     df = df.drop('amenities', axis=1)
 
-    # Nettoyage des noms de ville (suppression des doublons avec différence de casse)
-    df['city'] = df['city'].str.lower().str.strip()
-    df['city'] = df['city'].drop_duplicates()
-    df['city'] = df['city'].str.title()
+    # Clean city names (remove case-sensitive duplicates)
+    df['city'] = df['city'].replace(['París','France','Paris city'], 'Paris')
+    df['city'] = df['city'].replace(['Milano'], 'Milan')
+    df['city'] = df['city'].replace(['Italy'], 'Lombardia')
+    df['city'] = df['city'].replace(['UK','United Kingdom', 'England', 'Greater London', 'Central London'], 'London')
+    df['city'] = df['city'].str.lower().str.strip().drop_duplicates().str.title()
 
-    # Nettoyage des noms de pays
+
+    # Clean country names
     df['country'] = df['country'].replace({'FR': 'France'})
+    df['country'] = df['country'].replace(['Central London', 'Greater London', 'London', 'England'], 'United Kingdom')
+    df['country'] = df['country'].replace({'Lombardia': 'Italy'})
+
+    # Convert date columns to datetime
+    date_columns = ['last_scraped', 'calendar_last_scraped', 'first_review', 'last_review']
+    for col in date_columns:
+        df[col] = pd.to_datetime(df[col], errors='coerce').dt.strftime('%d-%m-%Y')
 
     return df
 
