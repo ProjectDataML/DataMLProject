@@ -34,6 +34,17 @@ def clean_data(df):
     # Suppression de la colonne 'neighbourhood' originale
     df = df.drop('neighbourhood', axis=1)
 
+    # Suppression de la colonne 'amenities' originale
+    df = df.drop('amenities', axis=1)
+
+    # Nettoyage des noms de ville (suppression des doublons avec différence de casse)
+    df['city'] = df['city'].str.lower().str.strip()
+    df['city'] = df['city'].drop_duplicates()
+    df['city'] = df['city'].str.title()
+
+    # Nettoyage des noms de pays
+    df['country'] = df['country'].replace({'FR': 'France'})
+
     return df
 
 def merge_and_insert_data(base_path='ml'):
