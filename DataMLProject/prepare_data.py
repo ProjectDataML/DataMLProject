@@ -36,7 +36,7 @@ def clean_data(df):
     df = df.drop('amenities', axis=1)
 
     # Clean city names (remove case-sensitive duplicates)
-    df['city'] = df['city'].replace(['París','France','Paris city'], 'Paris')
+    df['city'] = df['city'].replace(['París','France','Paris city', 'Île-de-France'], 'Paris')
     df['city'] = df['city'].replace(['Milano'], 'Milan')
     df['city'] = df['city'].replace(['Italy'], 'Lombardia')
     df['city'] = df['city'].replace(['UK','United Kingdom', 'England', 'Greater London', 'Central London'], 'London')
