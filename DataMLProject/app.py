@@ -97,11 +97,18 @@ def plot_availability_over_time(df):
     """)
 
 
-# Affichage de la distribution des prix par type de logement sous forme de boîte à moustaches
 def plot_price_distribution_by_room_type(df):
     st.subheader("Distribution des prix par type de logement")
+
+    # Widget interactif pour sélectionner deux types de logement à comparer
+    selected_room_types = st.multiselect('Sélectionner deux types de logement à comparer:', df['room_type'].unique())
+
+    # Filtrer les données en fonction des types de logement sélectionnés
+    filtered_df = df[df['room_type'].isin(selected_room_types)]
+
+    # Tracer le graphique de la distribution des prix
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.boxplot(x='room_type', y='price', data=df, ax=ax)
+    sns.boxplot(x='room_type', y='price', data=filtered_df, ax=ax)
     ax.set_title('Distribution des prix par type de logement')
     ax.set_xlabel('Type')
     ax.set_ylabel('Prix')
