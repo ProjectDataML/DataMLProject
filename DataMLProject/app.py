@@ -261,7 +261,10 @@ def main():
         plot_availability_trends(df)
 
     # Section 9: Analyse interactive des notes
-    st.title('Analyse interactive des notes Airbnb par Pays et Quartier')
+    interactive_rating_analysis(df)
+
+    # Section 10: Analyse interactive des notes Airbnb par Pays et Quartier
+    st.subheader('Analyse interactive des notes Airbnb par Pays et Quartier')
 
     # Sélection du pays dans la barre latérale
     selected_country = st.selectbox('Sélectionnez le pays:', df['country'].unique())
@@ -272,7 +275,6 @@ def main():
     # Sélection du quartier basé sur le pays sélectionné
     selected_neighbourhood = st.multiselect('Sélectionnez le quartier:',
                                             df_filtered_country['neighbourhood_cleansed'].unique())
-
     # Filtrage final des données
     if selected_neighbourhood:
         df_final_filtered = df_filtered_country[
