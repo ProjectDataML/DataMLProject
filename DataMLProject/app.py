@@ -47,12 +47,25 @@ def plot_city_treemap(df):
         Le treemap est une représentation proportionnelle où chaque ville est un bloc dont la taille et la couleur varient selon le prix moyen des logements. Les grandes sections sombres pour "Mayfair" et "Paris 16E" attirent immédiatement l'attention, suggérant non seulement des prix moyens élevés mais aussi probablement une concentration de logements haut de gamme ou une demande accrue. À l'inverse, des villes avec des blocs plus petits et plus clairs pourraient indiquer des marchés plus accessibles. Cette vue peut être extrêmement utile pour les voyageurs qui budgettent leur voyage, ainsi que pour les hôtes qui évaluent le positionnement de leur tarif par rapport aux autres villes. Le treemap est un excellent outil de comparaison rapide qui montre comment les prix varient significativement d'une ville à l'autre, et il met également en évidence la diversité des marchés immobiliers au sein du réseau Airbnb.
         """)
 
-
 # Affichage du prix moyen par pays sous forme de bar chart
 def plot_bar_chart(df):
     st.subheader("Prix moyens par pays")
     neighborhood_data = df.groupby('country')['price'].mean().sort_values()
-    st.bar_chart(neighborhood_data)
+
+    # Generate a color palette with distinct colors for each country
+    colors = sns.color_palette('husl', len(neighborhood_data))
+
+    # Plotting the bar chart with Seaborn for better styling
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=neighborhood_data.index, y=neighborhood_data.values, palette=colors)
+    plt.xlabel('Pays')
+    plt.ylabel('Prix moyen')
+    plt.title('Prix moyens des locations Airbnb par pays')
+
+    # Adding legend
+    legend_labels = [f"{country}: {price:.2f} €" for country, price in
+                     zip(neighborhood_data.index, neighborhood_data.values)]
+    st.pyplot()
     st.write("""
     Le graphique montre les tarifs moyens des locations Airbnb dans quatre pays européens. Les Pays-Bas affichent les prix les plus élevés, suivis de près par le Royaume-Uni. La France se situe légèrement en dessous, tandis que l'Italie propose les prix les plus bas. Ces variations peuvent refléter la demande, la disponibilité des logements et les stratégies de tarification compétitives. Ces données sont cruciales pour les voyageurs dans la planification budgétaire et pour les hôtes dans l'ajustement de leur stratégie de tarification. Pour Airbnb, ces informations sont essentielles pour identifier les opportunités de marché et ajuster les stratégies de tarification.
     """)
@@ -120,14 +133,19 @@ def plot_availability_trends(df):
     st.subheader("Tendance par mois")
     df['last_review'] = pd.to_datetime(df['last_review'])
     df['review_month'] = df['last_review'].dt.month
-    monthly_reviews = df.groupby('review_month').size()
-    fig, ax = plt.subplots(figsize=(10, 6))
-    monthly_reviews.plot(kind='bar', ax=ax)
-    ax.set_title('Tendance par mois')
-    ax.set_xlabel('Mois')
-    ax.set_ylabel('Nombre de reviews (pour mesurer activité)')
-    ax.set_xticklabels(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], rotation=45)
-    st.pyplot(fig)
+    monthly_reviews = df.groupby('review_month').size().reset_index(name='count')
+
+    # Generate a color palette with distinct colors for each month
+    colors = sns.color_palette('husl', len(monthly_reviews))
+
+    # Plotting the bar chart with Seaborn for better styling
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x='review_month', y='count', data=monthly_reviews, palette=colors)
+    plt.title('Tendance par mois')
+    plt.xlabel('Mois')
+    plt.ylabel('Nombre de reviews (pour mesurer activité)')
+    plt.xticks(range(1, 13), ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'])
+    st.pyplot()
     st.write("""
         L'évolution mensuelle de la disponibilité des logements Airbnb offre un aperçu des fluctuations observées, attribuables à divers facteurs tels que les saisons touristiques, les événements locaux et les réglementations sur les locations à court terme. Par exemple, les pics de disponibilité en fin d'année correspondent probablement à la demande accrue pendant les vacances. À l'inverse, les creux peuvent résulter de périodes de faible activité touristique ou de décisions des propriétaires de ne pas louer leurs biens. Comprendre ces tendances est essentiel pour les hôtes et Airbnb, leur permettant d'ajuster leurs stratégies pour maximiser les revenus et équilibrer l'offre et la demande. Ce graphique offre également des indications précieuses pour la planification future, aidant les hôtes à optimiser leur occupation et Airbnb à identifier des opportunités de croissance.
         """)
