@@ -9,6 +9,7 @@ from folium.plugins import MarkerCluster
 from streamlit_folium import st_folium
 import matplotlib.colors as colors
 import numpy as np
+import pydeck as pdk
 
 # Charger les données depuis la base de données
 def load_data():
@@ -70,7 +71,6 @@ def plot_bar_chart(df):
     Le graphique montre les tarifs moyens des locations Airbnb dans quatre pays européens. Les Pays-Bas affichent les prix les plus élevés, suivis de près par le Royaume-Uni. La France se situe légèrement en dessous, tandis que l'Italie propose les prix les plus bas. Ces variations peuvent refléter la demande, la disponibilité des logements et les stratégies de tarification compétitives. Ces données sont cruciales pour les voyageurs dans la planification budgétaire et pour les hôtes dans l'ajustement de leur stratégie de tarification. Pour Airbnb, ces informations sont essentielles pour identifier les opportunités de marché et ajuster les stratégies de tarification.
     """)
 
-
 # Affichage de la répartition des types de logements sous forme de diagramme circulaire
 def plot_property_types_pie(df):
     st.subheader('Répartition des 6 grands types de logements')
@@ -81,7 +81,6 @@ def plot_property_types_pie(df):
     st.write("""
     Le diagramme circulaire concernant la "Répartition des 6 grands types de logements" révèle que la majorité des propriétés disponibles sont des "Entire rental unit", indiquant une forte préférence des utilisateurs d'Airbnb pour des logements entiers. Cela peut refléter le désir des voyageurs pour plus d'espace, de confort et de confidentialité. Les autres catégories, comme les "Entire lofts" et les "Private rooms in home", occupent des segments plus petits, ce qui implique que bien qu'il y ait une demande pour ces types de logements, elle est considérablement moindre comparée à celle pour des logements entiers. Cette information est utile pour les hôtes lors de la mise en marché de leur propriété et peut également indiquer où Airbnb pourrait étendre son offre pour satisfaire la demande.
     """)
-
 
 # Affichage de la disponibilité moyenne des annonces au fil du temps sous forme de graphique linéaire
 def plot_availability_over_time(df):
@@ -95,7 +94,6 @@ def plot_availability_over_time(df):
     st.write("""
     En ce qui concerne la "Disponibilité moyenne des annonces au fil du temps", nous voyons des fluctuations significatives tout au long de la période représentée. La chute nette de la disponibilité à mi-parcours suggère une période de forte occupation ou une restriction temporaire de l'offre. Le pic remarquable en décembre pourrait être attribué aux vacances de Noël, quand les propriétaires choisissent de mettre leurs biens sur le marché pour profiter de la demande saisonnière. Ces données sont essentielles pour les hôtes Airbnb qui peuvent vouloir ajuster leur disponibilité en prévision des variations saisonnières de la demande, et pour les voyageurs cherchant à comprendre les meilleures périodes pour trouver des options de logement disponibles.
     """)
-
 
 def plot_price_distribution_by_room_type(df):
     st.subheader("Distribution des prix par type de logement")
@@ -158,6 +156,42 @@ def plot_availability_trends(df):
         """)
 
 
+def interactive_rating_analysis(df):
+    st.subheader("Analyse interactive des notes")
+
+    # Options de sélection sous forme d'entiers de 1 à 5
+    options_notation = list(range(1, 6))
+
+    # Sélection de la note
+    note_selectionnee = st.selectbox("Sélectionnez la note", options=options_notation, index=3)
+
+    # Convertir la note sélectionnée en étoiles
+    note_text = ":star:" * note_selectionnee
+
+    # Affichage de la note sélectionnée sous forme d'étoiles
+    st.markdown(f"Sélection : {note_text}")
+
+    # Filtrer les données en fonction de la note sélectionnée
+    df_price_filtered = df[df['review_scores_value'] >= note_selectionnee]
+
+    # Coordonnées de Paris
+    latitude_paris = 48.8566
+    longitude_paris = 2.3522
+
+    # Création de la carte avec pydeck
+    view_state = pdk.ViewState(latitude=latitude_paris, longitude=longitude_paris, zoom=11)
+    layer = pdk.Layer(
+        "ScatterplotLayer",
+        df_price_filtered,
+        get_position=["longitude", "latitude"],
+        get_color="[200, 30, 0, 160]",
+        get_radius=100,
+    )
+    r = pdk.Deck(layers=[layer], initial_view_state=view_state)
+
+    # Affichage de la carte dans Streamlit
+    st.pydeck_chart(r)
+
 # Affichage du Cluster Map des prix
 def plot_price_map_clustered(df):
     st.subheader("Cluster Map des prix")
@@ -179,7 +213,6 @@ def plot_price_map_clustered(df):
         """)
 
 
-# Initialisation du dashboard
 def main():
     st.set_page_config(layout="wide")
     st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -227,8 +260,45 @@ def main():
     with col2:
         plot_availability_trends(df)
 
-    # Section 9: Cluster Map des prix
+    # Section 9: Analyse interactive des notes
+    st.title('Analyse interactive des notes Airbnb par Pays et Quartier')
+
+    # Sélection du pays dans la barre latérale
+    selected_country = st.selectbox('Sélectionnez le pays:', df['country'].unique())
+
+    # Filtrage des données pour le pays sélectionné
+    df_filtered_country = df[df['country'] == selected_country]
+
+    # Sélection du quartier basé sur le pays sélectionné
+    selected_neighbourhood = st.multiselect('Sélectionnez le quartier:',
+                                            df_filtered_country['neighbourhood_cleansed'].unique())
+
+    # Filtrage final des données
+    if selected_neighbourhood:
+        df_final_filtered = df_filtered_country[
+            df_filtered_country['neighbourhood_cleansed'].isin(selected_neighbourhood)]
+    else:
+        df_final_filtered = df_filtered_country
+
+    # Fonction pour générer et afficher un graphique
+    def plot_data(x, y, data, title, xlabel, ylabel):
+        plt.figure(figsize=(10, 6))
+        sns.barplot(x=x, y=y, data=data)
+        plt.title(title)
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
+        plt.xticks(rotation=90)
+        st.pyplot(plt.gcf())
+
+    # Analyse des prix moyens par quartier
+    plot_data('neighbourhood_cleansed', 'price', df_final_filtered, 'Prix Moyen par Quartier', 'Quartier', 'Prix Moyen')
+
+    # Section 10: Cluster Map des prix
     plot_price_map_clustered(df)
+
+if __name__ == "__main__":
+    main()
+
 
 if __name__ == "__main__":
     main()
