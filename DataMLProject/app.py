@@ -163,34 +163,39 @@ def interactive_rating_analysis(df):
     options_notation = list(range(1, 6))
 
     # Sélection de la note
-    note_selectionnee = st.selectbox("Sélectionnez la note", options=options_notation, index=3)
-
-    # Convertir la note sélectionnée en étoiles
-    note_text = ":star:" * note_selectionnee
-
-    # Affichage de la note sélectionnée sous forme d'étoiles
-    st.markdown(f"Sélection : {note_text}")
+    note_selectionnee = st.selectbox("Sélectionnez la note:", options=options_notation, index=3)
 
     # Filtrer les données en fonction de la note sélectionnée
-    df_price_filtered = df[df['review_scores_value'] >= note_selectionnee]
+    df_filtered = df[df['review_scores_value'] == note_selectionnee]
 
-    # Coordonnées de Paris
-    latitude_paris = 48.8566
-    longitude_paris = 2.3522
+    # Création de la carte avec un zoom plus précis sur Paris
+    m = folium.Map(location=[48.8566, 2.3522], zoom_start=11)
 
-    # Création de la carte avec pydeck
-    view_state = pdk.ViewState(latitude=latitude_paris, longitude=longitude_paris, zoom=11)
-    layer = pdk.Layer(
-        "ScatterplotLayer",
-        df_price_filtered,
-        get_position=["longitude", "latitude"],
-        get_color="[200, 30, 0, 160]",
-        get_radius=100,
-    )
-    r = pdk.Deck(layers=[layer], initial_view_state=view_state)
+    # Ajout des marqueurs
+    for idx, row in df_filtered.iterrows():
+        folium.Marker(
+            [row['latitude'], row['longitude']],
+            tooltip=f"<b>Logement:</b> {row['neighborhood_overview']}<br><b>Note:</b> {row['review_scores_value']}",
+            icon=folium.Icon(color=get_marker_color(row['review_scores_value']))
+        ).add_to(m)
 
     # Affichage de la carte dans Streamlit
-    st.pydeck_chart(r)
+    st_folium(m, width='100%', height=600)
+
+def get_marker_color(note):
+    """Retourne la couleur du marqueur en fonction de la note."""
+    if note == 1:
+        return 'red'
+    elif note == 2:
+        return 'orange'
+    elif note == 3:
+        return 'lightgray'  # Aucune option directe pour jaune dans folium.Icon, utiliser lightgray pour différencier
+    elif note == 4:
+        return 'lightblue'
+    elif note == 5:
+        return 'green'
+    else:
+        return 'gray'  # Couleur par défaut
 
 # Affichage du Cluster Map des prix
 def plot_price_map_clustered(df):
