@@ -9,4 +9,4 @@ def stats(request):
     return render(request, 'stats.html', {"streamlit_url": "http://localhost:8501"})
 
 def ml(request):
-    return render(request, 'ml.html' )
+    return render(request, 'ml.html' , {"streamlit_url": "http://localhost:8502"})
