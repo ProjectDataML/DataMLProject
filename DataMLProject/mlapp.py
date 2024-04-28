@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 def load_data():
     engine = create_engine('sqlite:///airbnb_data.db')
     query = "SELECT * FROM merged_data"
-    df = pd.read_sql_query(query, engine)
+    df = pd.read_sql(query, engine)
     df['price'] = df['price'].replace('[\$,]', '', regex=True).astype(int)
     df['original_price'] = df['price']  # Conserver les prix originaux dans une nouvelle colonne
     return df, engine
@@ -21,14 +21,10 @@ def perform_clustering(data, features_list, n_clusters=15):
     return kmeans, scaler
 
 def find_nearest_cluster(model, user_input, scaler, features_list):
-    try:
-        user_df = pd.DataFrame([user_input], columns=features_list)
-        scaled_input = scaler.transform(user_df)
-        cluster = model.predict(scaled_input)[0]
-        return cluster
-    except Exception as e:
-        print(f"Error in find_nearest_cluster: {e}")
-        return None
+    user_df = pd.DataFrame([user_input], columns=features_list)
+    scaled_input = scaler.transform(user_df)
+    cluster = model.predict(scaled_input)[0]
+    return cluster
 
 def save_rating(engine, listing_id, rating):
     with engine.connect() as conn:
@@ -43,27 +39,25 @@ def main():
     selected_country = st.selectbox('Dans quel pays cherchez-vous un logement ?', df['country'].dropna().unique(), key='country')
     selected_room_type = st.selectbox('Quel type de chambre cherchez-vous ?', df['room_type'].unique(), key='room_type')
 
-    features_list = ['price', 'beds']
     filtered_df = df[(df['country'] == selected_country) & (df['room_type'] == selected_room_type)]
+    features_list = ['price', 'beds']
     kmeans, scaler = perform_clustering(filtered_df, features_list)
 
-    user_inputs = {feature: st.number_input("Entrez votre valeur préférée pour " + feature, value=int(filtered_df[feature].mean())) for feature in features_list}
+    user_inputs = [st.number_input("Entrez votre valeur préférée pour " + feature, value=int(filtered_df[feature].mean())) for feature in features_list]
+    cluster = find_nearest_cluster(kmeans, user_inputs, scaler, features_list)
+    cluster_data = filtered_df[filtered_df['cluster'] == cluster]
+    top_listings = cluster_data.nsmallest(10, 'original_price')
 
-    if st.button("Trouver les meilleurs logements"):
-        cluster = find_nearest_cluster(kmeans, list(user_inputs.values()), scaler, features_list)
-        cluster_data = filtered_df[filtered_df['cluster'] == cluster]
-        top_listings = cluster_data.nsmallest(10, 'original_price')
-
-        st.subheader(f"Les 10 meilleurs logements dans le cluster {cluster + 1}")
-        for index, row in top_listings.iterrows():
-            with st.container():
-                st.image(row['picture_url'], width=300)
-                link = f"<a href='{row['listing_url']}' target='_blank'>{row['name']}</a> - ${row['original_price']} per night"
-                st.markdown(link, unsafe_allow_html=True)
-                rating = st.slider("Notez ce logement de 1 à 5 étoiles", 1, 5, value=3, step=1, key=f"rate_{row['id']}")
-                if st.button("Enregistrer la note", key=f"save_{row['id']}"):
-                    save_rating(engine, row['id'], rating)
-                    st.success("Merci pour votre évaluation!")
+    st.subheader(f"Les 10 meilleurs logements dans le cluster {cluster + 1}")
+    for index, row in top_listings.iterrows():
+        with st.container():
+            st.image(row['picture_url'], width=300)
+            link = f"<a href='{row['listing_url']}' target='_blank'>{row['name']}</a> - ${row['original_price']} per night"
+            st.markdown(link, unsafe_allow_html=True)
+            rating_key = f"rate_{row['id']}"
+            rating = st.slider("Notez ce logement de 1 à 5 étoiles", 1, 5, value=st.session_state.get(rating_key, 3), step=1, key=rating_key)
+            save_btn = st.button("Enregistrer la note", key=f"save_{row['id']}")
+        
 
 if __name__ == "__main__":
     main()
